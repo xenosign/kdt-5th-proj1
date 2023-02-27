@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      /* 컨테이너 박스 중앙 정렬을 위한 flex */
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 800px;
+      height: 800px;
+      /* 그리드 적용 */
+      display: grid;
+      /* 그리고 열 개수 설정, 1fr 마다 1개의 열이 생성 */
+      grid-template-columns: 1fr 1fr;
+      /* 새로의 크기는 알아서 늘려서 맞추도록 설정 */
+      align-items: stretch;
+      /* 아이템간 거리 설정 */
+      gap: 10px;
+      background-color: orange;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .container>div {
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+  </div>
+</body>
+
+<script>
+  const container = document.querySelector('.container');
+  // 최대 라운드 설정, 해당 값에서 실제 라운드 값을 뺀 값을 통해 색상의 차이 정도를 설정
+  const MaxRound = 10;
+  // 현재 라운드 설정, 1라운드 -> 2 x 2 / 2라운드 3 x 3 과 같은식으로 증대
+  let round = 4;
+
+  // 문제 만드는 함수 실행
+  makeTest(round);
+
+  // 문제 만드는 함수
+  function makeTest(round) {
+    // 1라운드 2 x 2 상황이면 아이템 박스는 2 * 2 개가 필요
+    // 라운드 + 1 를 제곱한 수만큼 박스가 필요하므로 변수로 만들어서 저장
+    const boxCounts = (round + 1) ** 2;
+
+    // 전체 박스 중 하나가 랜덤하게 색상이 달라야 하므로 0 ~ 박스 전체의 수 중에서 랜덤한 숫자 생성
+    const diffBox = Math.floor(Math.random() * boxCounts);
+
+    // 라운드 별로 열의 개수가 추가되어야 하므로 2라운드 이후 부터 grid 속성에 1fr 을 추가하도록 설정
+    container.style = `grid-template-columns: 1fr 1fr${' 1fr'.repeat(round - 1)}`;
+
+    // 색상표(#000000 ~ #FFFFFF)는 16진수 이므로 10진수로 변환하여 최대값을 미리 구해놓기
+    const maxColorDec = parseInt('FFFFFF', 16);
+
+    // 0 ~ 색상 최대값 중에서 랜덤한 숫자를 발생해서 매번 색상이 변하도록 설정
+    const randColorDec = Math.floor(Math.random() * maxColorDec);
+
+    // 색상표로 입력하려면 16진수로 입력해야 하므로, 랜덤하게 만든 숫자를 16진수로 변경
+    const randColor = randColorDec.toString(16);
+
+    // 필요한 박스 개수만큼 박스를 새롭게 만들어서 추가하는 반복문
+    for (let i = 0; i < boxCounts; i++) {
+      const divEl = document.createElement('div');
+
+      // 위에서 구한 색상이 다른 박스면 색상을 다르게 적용하기 위한 if 문
+      if (i === diffBox) {
+        // 라운드가 진행 될 수록 색상의 변화 폭이 작아져야 하므로 최대 라운드(10)에서 현재 라운드를 뺀 값에 
+        // 500 을 곱해서 랜덤으로 생성 된 색상 값에 더한 다음 다시 16진수로 변환하여 색상이 다른 박스의 색상 적용
+        divEl.style.backgroundColor = "#" + (randColorDec + (500 * (MaxRound - round))).toString(16);
+      } else {
+        // 랜덤하게 구해진 박스 색상을 나머지 박스에 전부 적용
+        divEl.style.backgroundColor = "#" + randColor;
+      }
+
+      // 색상 적용이 완료 된, 박스를 grid 에 붙여주기
+      container.append(divEl);
+    }
+  }
+</script>
+
+</html>
