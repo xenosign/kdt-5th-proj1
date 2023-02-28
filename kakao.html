@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- 데이터 통신용 axios 라이브러리 임포트 -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <!-- 실제 공유 버튼, 해당 버튼 클릭 시 capture() 함수 실행 -->
+  <a id="kakao-link-btn" href="javascript:capture()">
+    <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" />
+  </a>
+  <!-- 캡쳐 여부 체크를 위한 그림 요소 -->
+  <div id="capture" style="padding: 10px; background: #f5da55">
+    <h4 style="color: #000; ">Hello world!</h4>
+  </div>
+  <!-- 웹 페이지를 이미지로 변환하는 라이브러리 임포트 -->
+  <script src="./html2canvas.min.js"></script>
+  <!-- kakao sdk 호출 -->
+  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+</body>
+
+<script type="text/javascript">
+  // Imgur 정보
+  // Client ID  // c9a41f6aa3156e7
+  // Client SEC  // 34914aaed56365d622b8bc449a9fec7c2fa2897f
+
+
+  // SDK를 초기화 합니다. 사용할 앱의 JavaScript 키를 설정해 주세요.
+  Kakao.init('dcf08e2237bc43b3b5b66ee74529405f');
+
+  // SDK 초기화 여부를 판단합니다.
+  console.log(Kakao.isInitialized());
+
+
+  // 이미지 정보 전달용 변수
+  let img;
+
+  function capture() {
+    // 카카오 버튼을 클릭하면 body 태그 전체를 이미지로 변경해 주는 함수
+    html2canvas(document.querySelector("body"), {}).then(function(canvas) {
+      // 이미지를 jpg 파일 타입으로 변경하는 코드
+      img = canvas.toDataURL("image/jpg").split(',')[1];
+      // 이미 정보를 imgur 업로드용 함수로 전달
+      uploadImageTest(img);
+    });
+  }
+
+  function uploadImageTest(img) {
+    // axios 라이브러리를 이용하여 imgur api 에 캡쳐한 이미지 업로드
+    axios.post("https://api.imgur.com/3/image", {
+        image: img,
+        type: 'base64'
+      }, {
+        headers: {
+          Authorization: 'Client-ID c9a41f6aa3156e7'
+        }
+      })
+      .then(res => {
+        // 이미지 업로드가 끝나면 이미지 업로드 주소를 응답으로 받아옴
+        console.log(res.data.data.link);
+        // 이미지 주소를 공유해야 하므로 카카오 공유 함수에 인자로 이미지 주소 전달
+        kakaoShare(res.data.data.link);
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+
+  function kakaoShare(img) {
+    Kakao.Link.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: 'test',
+        description: 'test',
+        // 받은 이미지 주소를 카카오 공유!
+        imageUrl: img,
+        link: {
+          mobileWebUrl: 'https://naver.com',
+          webUrl: 'https://naver.com',
+        },
+      },
+      buttons: [{
+        title: '웹으로 보기',
+        link: {
+          mobileWebUrl: 'https://naver.com',
+          webUrl: 'https://naver.com',
+        },
+      }, ],
+      // 카카오톡 미설치 시 카카오톡 설치 경로이동
+      installTalk: true,
+    })
+  }
+</script>
+
+</html>
